@@ -34,5 +34,10 @@ namespace AssAlgo
         {
             _testText.DisplayedString = _clock.ElapsedTime.AsMilliseconds().ToString()+"ms";
         }
+
+        public void LogicUpdateAsync(TomasEngine engine, TomasTime time)
+        {
+            
+        }
     }
 }

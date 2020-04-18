@@ -26,6 +26,16 @@ namespace AssAlgo
             TestTextController controllertest = new TestTextController();
             MouseController mouseController = new MouseController();
             FpsCounter fpsCounter = new FpsCounter();
+            //Draggable grag = new Draggable();
+            //engine.HandleEntity(grag);
+
+
+            var button = engine.CreateEntity<Button>();
+            button.Size = new Vector2f(100, 50);
+            button.Position = new Vector2f(300, 300);
+
+            engine.CreateEntity<ButtonArray>();
+
             engine.HandleEntity(fpsCounter);
             engine.HandleEntity(test);
             engine.HandleEntity(controllertest);

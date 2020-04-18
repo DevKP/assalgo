@@ -32,5 +32,10 @@ namespace AssAlgo
             _fpsText.DisplayedString = (1000000 / time.TicksDelta) + "FPS";
             Position = new Vector2f(engine.WindowsSize.X - _fpsText.GetGlobalBounds().Width, 0);
         }
+
+        public void LogicUpdateAsync(TomasEngine engine, TomasTime time)
+        {
+            
+        }
     }
 }

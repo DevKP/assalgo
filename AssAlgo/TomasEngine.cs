@@ -19,6 +19,7 @@ namespace AssAlgo
         private int _targetFramerate;
         private long _targetMicrosec;
         private Vector2u _windowsSize;
+        private Vector2i _mousePos;
 
         /// <summary>Event handler for the TextEntered event</summary>
         public event EventHandler<TextEventArgs> TextEntered;
@@ -41,6 +42,8 @@ namespace AssAlgo
         /// <summary>Event handler for the MouseMoved event</summary>
         public event EventHandler<MouseMoveEventArgs> MouseMoved = delegate { };
 
+        public int EntityNumber { get => _entities.Count; }
+
         public Color ClearColor
         {
             get => _clearColor;
@@ -57,6 +60,17 @@ namespace AssAlgo
             }
         }
 
+        public RenderWindow ActiveWindow 
+        {
+            get => _window;
+            set => _window = value;
+        }
+
+        public Vector2i MousePosition
+        {
+            get => _mousePos;
+        }
+
         public Vector2u WindowsSize => _windowsSize;
 
         public TomasEngine(string title, uint width, uint height, VideoMode mode)
@@ -65,10 +79,25 @@ namespace AssAlgo
             _window.SetVisible(false);
             _window.Size = new Vector2u(width,height);
             _window.SetView(new View(new FloatRect(0f,0f, width, height)));
+
+            //////////////
             _window.Closed += (o, _) => _window.Close();
+            _window.Resized += (_, x) =>
+            {
+                _window.SetView(new View(new FloatRect(0f, 0f, x.Width, x.Height)));
+                _windowsSize = new Vector2u(x.Width, x.Height);
+            };
+            _window.MouseButtonPressed += (o, a) => MouseButtonPressed?.Invoke(this, a);
+            _window.MouseMoved += (o, a) =>
+            {
+                MouseMoved?.Invoke(this, a);
+                _mousePos = new Vector2i(a.X, a.Y);
+            };
+            _window.MouseButtonReleased += (o, a) => MouseButtonReleased?.Invoke(this, a);
+            //////////////
 
             _clearColor = Color.White;
-            TargetFramerate = 60;
+            TargetFramerate = 120;
 
             _entities = new List<IEntity>();
         }
@@ -88,15 +117,21 @@ namespace AssAlgo
             _entities.Add(entity);
             return _entities.Count;
         }
+        public T CreateEntity<T>() where T: IEntity
+        {
+            Type[] types = new Type[1];
+            types[0] = typeof(TomasEngine);
+            IEntity ent;
+            if (typeof(T).GetConstructor(types) != null)
+                ent = Activator.CreateInstance(typeof(T), this) as IEntity;
+            else
+                ent = Activator.CreateInstance(typeof(T)) as IEntity;
+            _entities.Add(ent);
+            return (T)ent;
+        }
         public void Run()
         {
-            _window.MouseMoved += (o, a) => MouseMoved.Invoke(this, a);
-            _window.Resized += (_, x) =>
-            {
-                _window.SetView(new View(new FloatRect(0f, 0f, x.Width, x.Height)));
-                _windowsSize = new Vector2u(x.Width,x.Height);
-            };
-            _window.MouseButtonPressed += (o, a) => MouseButtonPressed?.Invoke(this, a);
+            
 
             InitEntities();
 
@@ -154,8 +189,11 @@ namespace AssAlgo
         {
             foreach (var entity in _entities)
             {
-                if(entity.Initialized)
+                if (entity.Initialized)
+                {
                     entity.LogicUpdate(this, t);
+                    //Task.Run(() => entity.LogicUpdateAsync(this, t));
+                }
             }
         }
 

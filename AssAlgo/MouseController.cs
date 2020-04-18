@@ -22,7 +22,7 @@ namespace AssAlgo
 
             o.MouseMoved += (_, a) 
                 => te.Position = new Vector2f(a.X, a.Y);
-            o.MouseButtonPressed += O_MouseButtonPressed;
+            //o.MouseButtonPressed += O_MouseButtonPressed;
 
             te = o.GetEntity<TestEntity>() as TestEntity;
             Initialized = true;
@@ -45,6 +45,11 @@ namespace AssAlgo
         }
 
         public void LogicUpdate(TomasEngine engine, TomasTime time)
+        {
+            
+        }
+
+        public void LogicUpdateAsync(TomasEngine engine, TomasTime time)
         {
             
         }

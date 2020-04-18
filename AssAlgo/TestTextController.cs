@@ -25,5 +25,10 @@ namespace AssAlgo
             //float moveamount = (float)time.TicksDelta / Time.FromSeconds(5).AsMicroseconds() * 700f;
             //testEntity.Position += new Vector2f(moveamount, moveamount);
         }
+
+        public void LogicUpdateAsync(TomasEngine engine, TomasTime time)
+        {
+            
+        }
     }
 }
