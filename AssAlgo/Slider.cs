@@ -50,10 +50,13 @@ namespace AssAlgo
 
         public override void Draw(RenderTarget target, RenderStates states)
         {
-            states.Transform *= Transform;
-            target.Draw(_background, states);
-            target.Draw(_sliderPath, states);
-            target.Draw(_slider, states);
+            if (Visible)
+            {
+                states.Transform *= Transform;
+                target.Draw(_background, states);
+                target.Draw(_sliderPath, states);
+                target.Draw(_slider, states);
+            }
         }
 
         public override void Init(TomasEngine o)

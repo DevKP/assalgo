@@ -10,7 +10,7 @@ namespace AssAlgo
     {
         public override bool Visible { get; set; }
         public override bool Initialized { get; set; }
-        public override int Z { get; set; } = 2;
+        public override int Z { get; set; } = 0;
 
         RenderTexture _renderTexture;
         RectangleShape rectangleShape;

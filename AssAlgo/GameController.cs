@@ -112,23 +112,22 @@ namespace AssAlgo
 
 
             var paint = tooo.CreateEntity<Paint>();
-            paint.Size = new Vector2f(400, 400);
+            paint.Size = new Vector2f(800, 600);
 
             var but = tooo.CreateEntity<Button>();
             but.Size = new Vector2f(100, 30);
-            but.Position = new Vector2f(10, 410);
+            but.Position = new Vector2f(10, 550);
             but.Text = "Paint!";
             but.TextSize = 16;
             but.TextFont = tooo.opensense_reg;
 
-            but.OnClicked += (_, x) => paint.Visible = !paint.Visible;
-
 
             var cp = tooo.CreateEntity<ColorPicker>();
-            cp.Position = new Vector2f(150, 410);
+            cp.Position = new Vector2f(600, 450);
             cp.Size = new Vector2f(150, 100);
             cp.OnColorChanged += (c, _) => paint.BrushColor = (c as ColorPicker).RGBColor;
 
+            but.OnClicked += (_, x) => cp.Visible = paint.Visible = !paint.Visible;
 
             _splash = tooo.CreateEntity<SplashScreen>();
             _splash.Z = 10;

@@ -32,6 +32,8 @@ namespace AssAlgo
         public override void Init(TomasEngine o)
         {
             _background = new RectangleShape(new Vector2f(Size.X, Size.Y));
+            _background.OutlineThickness = 1;
+            _background.OutlineColor = new Color(120, 120, 120);
             _colorRect = new RectangleShape(new Vector2f(Size.X, Size.Y * 0.25f));
 
             _hueSlider = o.CreateEntity<Slider>();
@@ -97,15 +99,20 @@ namespace AssAlgo
 
         public override void Draw(RenderTarget target, RenderStates states)
         {
-            states.Transform *= Transform;
-            target.Draw(_background, states);
-            target.Draw(_colorRect, states);
+            if (Visible)
+            {
+                states.Transform *= Transform;
+                target.Draw(_background, states);
+                target.Draw(_colorRect, states);
+            }
         }
 
 
         public override void LogicUpdate(TomasEngine engine, TomasTime time)
         {
-            
+            _hueSlider.Visible = Visible;
+            _saturationSlider.Visible = Visible;
+            _brightnessSlider.Visible = Visible;
         }
 
         public override void LogicUpdateAsync(TomasEngine engine, TomasTime time)
