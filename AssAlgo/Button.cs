@@ -11,11 +11,31 @@ namespace AssAlgo
         public override bool Visible { get; set; }
         public override bool Initialized { get; set; }
 
+        public event EventHandler<EventArgs> OnClicked;
+
         public Color BackgroundColor 
         {
             get => _rect.FillColor;
             set => _rect.FillColor = value;
         }
+        public string Text
+        {
+            get => _text.DisplayedString;
+            set => _text.DisplayedString = value;
+        }
+        public uint TextSize
+        {
+            get => _text.CharacterSize;
+            set => _text.CharacterSize = value;
+        }
+
+        public Font TextFont
+        {
+            get => _text.Font;
+            set => _text.Font = value;
+        }
+
+        public override int Z { get; set; }
 
         private RectangleShape _rect;
         private Text _text;
@@ -69,7 +89,7 @@ namespace AssAlgo
 
         public override void Clicked(Vector2f localCoords)
         {
-            //_rect = new RectangleShape(new SFML.System.Vector2f(localCoords.X, localCoords.Y));
+            OnClicked?.Invoke(this, new EventArgs());
         }
 
         public override void Resized()

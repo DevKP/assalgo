@@ -7,26 +7,39 @@ using System.Text;
 
 namespace AssAlgo
 {
-     abstract class Interactive : Transformable, IEntity
+    enum MouseButtonState
+    {
+        Released,
+        Pressed
+    }
+
+    abstract class Interactive : Transformable, IEntity
      {
         abstract public bool Visible { get; set; }
         abstract public bool Initialized { get; set; }
 
-        private bool _dragging;
         private bool _hover;
         private bool _pressed;
         private bool _canDrag;
         private Vector2f _size;
-        private Vector2f _mouseOffset;
+        private TomasEngine _engine;
+
+        private Vector2f LocalMouse;
 
 
         public EventHandler<MouseButtonEventArgs> OnMousePressed;
         public EventHandler<MouseButtonEventArgs> OnMouseReleased;
-        public EventHandler<MouseMoveEventArgs> OnMouseMoved;
+
         public bool Dragging { get; protected set; }
         public bool Hover
-        { 
-            get => _hover;
+        {
+            get
+            {
+                var mCoords =_engine.ActiveWindow.MapPixelToCoords(_engine.MousePosition);
+                if (PointInRectangle(new FloatRect(Position, Size), mCoords))
+                    return true;
+                return false;
+            }
             protected set => _hover = value;
         }
         public bool Pressed 
@@ -45,36 +58,21 @@ namespace AssAlgo
             }
         }
 
+        abstract public int Z { get; set; }
+
         public Interactive(TomasEngine o)
         {
-           
+            _engine = o; ;
             o.MouseButtonPressed += (_, x) =>
             {
                 var mCoords = o.ActiveWindow.MapPixelToCoords(o.MousePosition);
+                LocalMouse = mCoords - Position;
                 if (PointInRectangle(new FloatRect(Position, Size), mCoords))
                 {
                     //Dragging = true;
                     _pressed = true;
-                    _mouseOffset = Position - new Vector2f(x.X, x.Y);
                     OnMousePressed?.Invoke(this, x);
                     Clicked(mCoords - Position);
-                }
-            };
-            o.MouseMoved += (_, x) =>
-            {
-                var mCoords = o.ActiveWindow.MapPixelToCoords(o.MousePosition);
-                //OnMouseMoved?.Invoke(this, x);
-                if (PointInRectangle(new FloatRect(Position, Size), mCoords))
-                {
-                    _hover = true;
-                    if (Dragging && CanDrag)
-                    {
-                        //Position = new Vector2f(mCoords.X + _mouseOffset.X, mCoords.Y + _mouseOffset.Y);
-                    }
-                }
-                else
-                {
-                    _hover = false;
                 }
             };
             o.MouseButtonReleased += (_, x) => 

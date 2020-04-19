@@ -24,6 +24,7 @@ namespace AssAlgo
 
         public Font arial = new Font("Arial.ttf");
         public Font opensense = new Font("OpenSans-Light.ttf");
+        public Font opensense_reg = new Font("OpenSans-Regular.ttf");
 
         /// <summary>Event handler for the TextEntered event</summary>
         public event EventHandler<TextEventArgs> TextEntered;
@@ -44,7 +45,7 @@ namespace AssAlgo
         public event EventHandler<MouseButtonEventArgs> MouseButtonReleased;
 
         /// <summary>Event handler for the MouseMoved event</summary>
-        public event EventHandler<MouseMoveEventArgs> MouseMoved = delegate { };
+        //public event EventHandler<MouseMoveEventArgs> MouseMoved = delegate { };
 
         public int EntityNumber { get => _entities.Count; }
 
@@ -79,7 +80,7 @@ namespace AssAlgo
 
         public TomasEngine(string title, uint width, uint height, VideoMode mode)
         {
-            _window = new RenderWindow(mode, title);
+            _window = new RenderWindow(mode, title,Styles.Default, new ContextSettings() {AntialiasingLevel = 1 });
             _window.SetVisible(false);
             _window.Size = new Vector2u(width,height);
             _window.SetView(new View(new FloatRect(0f,0f, width, height)));
@@ -94,10 +95,10 @@ namespace AssAlgo
             _window.MouseButtonPressed += (o, a) => MouseButtonPressed?.Invoke(this, a);
             _window.MouseMoved += (o, a) =>
             {
-                MouseMoved?.Invoke(this, a);
                 _mousePos = new Vector2i(a.X, a.Y);
             };
             _window.MouseButtonReleased += (o, a) => MouseButtonReleased?.Invoke(this, a);
+            _window.MouseWheelScrolled += (o, a) => MouseWheelScrolled?.Invoke(this, a);
             //////////////
 
             _clearColor = new Color(45,45,45);
@@ -133,6 +134,7 @@ namespace AssAlgo
 
             entity.Init(this);
             _entities.Add(entity);
+            _entities = _entities.OrderBy(e => e.Z).ToList();
             return (T)entity;
         }
 
@@ -155,9 +157,12 @@ namespace AssAlgo
 
             TomasTime tomasTime = new TomasTime();
 
+            long frameCount = 0;
+
             while (_window.IsOpen)
             {
-                _window.DispatchEvents();
+                if(frameCount % 2 == 0)
+                    _window.DispatchEvents();
 
                 _window.Clear(_clearColor);
 
@@ -173,7 +178,7 @@ namespace AssAlgo
                 tomasTime.LastDrawTime = debugDrawClock.Restart().AsMicroseconds();
 
                 _window.Display();
-
+                frameCount += 1;
                 //if (deltaClock.ElapsedTime.AsMicroseconds() < _targetMicrosec)
                 //{
                 //    int waitMsec = (int) (_targetMicrosec - deltaClock.ElapsedTime.AsMicroseconds()) / 1000;
@@ -183,6 +188,9 @@ namespace AssAlgo
 
                 //Thread.Sleep((int)(_targetMicrosec - deltaClock.ElapsedTime.AsMicroseconds()))
             }
+
+
+
         }
 
         private void InitEntities()

@@ -12,6 +12,8 @@ namespace AssAlgo
         public override bool Visible { get; set; }
         public override bool Initialized { get; set; }
 
+        public override int Z { get; set; } = 0;
+
         public event EventHandler<EventArgs> OnStateChanged;
 
         private RectangleShape _background;

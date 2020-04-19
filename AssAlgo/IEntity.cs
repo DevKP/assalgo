@@ -8,6 +8,7 @@ namespace AssAlgo
 {
     public interface IEntity : Drawable
     {
+        public int Z { get; set; }
         public bool Initialized { get; }
         public bool Visible { get; set; }
         void Init(TomasEngine o);

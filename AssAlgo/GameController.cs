@@ -12,6 +12,7 @@ namespace AssAlgo
         public bool Initialized  { get; set;}
 
         public bool Visible { get; set; }
+        public int Z { get; set; } = 0;
 
         private SplashScreen _splash;
         private Clock _clock;
@@ -89,7 +90,9 @@ namespace AssAlgo
             _fuckingText4.CharacterSize = 13;
             _fuckingText4.Text = "Bro :D";
 
-            _checkerBox3.OnStateChanged += (c, _) => _fuckingText4.Visible = (c as CheckerBox).Checked;
+            _checkerBox3.OnStateChanged +=
+                (c, _) =>
+                    _fuckingText4.Visible = (c as CheckerBox).Checked;
 
             _fuckingSlider.OnValueChanged +=
                 (s, _) =>
@@ -107,7 +110,28 @@ namespace AssAlgo
                     _fuckingText.Text = Slider.Value.ToString();
                 };
 
+
+            var paint = tooo.CreateEntity<Paint>();
+            paint.Size = new Vector2f(400, 400);
+
+            var but = tooo.CreateEntity<Button>();
+            but.Size = new Vector2f(100, 30);
+            but.Position = new Vector2f(10, 410);
+            but.Text = "Paint!";
+            but.TextSize = 16;
+            but.TextFont = tooo.opensense_reg;
+
+            but.OnClicked += (_, x) => paint.Visible = !paint.Visible;
+
+
+            var cp = tooo.CreateEntity<ColorPicker>();
+            cp.Position = new Vector2f(150, 410);
+            cp.Size = new Vector2f(150, 100);
+            cp.OnColorChanged += (c, _) => paint.BrushColor = (c as ColorPicker).RGBColor;
+
+
             _splash = tooo.CreateEntity<SplashScreen>();
+            _splash.Z = 10;
             _clock = new Clock();
 
             Initialized = true;
@@ -117,6 +141,12 @@ namespace AssAlgo
         {
             if (_clock.ElapsedTime.AsSeconds() > 3)
                 _splash.Visible = false;
+
+            //var view = engine.ActiveWindow.GetView();
+            //var Viewport = view.Viewport;
+            //view.Viewport = new FloatRect(Viewport.Left + 0.001f, Viewport.Top + 0.001f, Viewport.Width, Viewport.Height);
+            //engine.ActiveWindow.SetView(view);
+           // engine.ActiveWindow.SetView(new View(new FloatRect(view.Left + 0.01f, view.Top + 0.01f, view.Width, view.Height)));
         }
 
         public void LogicUpdateAsync(TomasEngine engine, TomasTime time)

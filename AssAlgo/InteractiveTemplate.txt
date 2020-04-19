@@ -1,0 +1,41 @@
+﻿class NAME : Interactive
+    {
+        public override bool Visible { get; set; }
+        public override bool Initialized { get; set; }
+        public override int Z { get; set; } = 0;
+
+        public NAME(TomasEngine o) : base(o)
+        {
+
+        }
+
+        public override void Clicked(Vector2f localCoords)
+        {
+            
+        }
+
+        public override void Draw(RenderTarget target, RenderStates states)
+        {
+            
+        }
+
+        public override void Init(TomasEngine o)
+        {
+           
+        }
+
+        public override void LogicUpdate(TomasEngine engine, TomasTime time)
+        {
+            
+        }
+
+        public override void LogicUpdateAsync(TomasEngine engine, TomasTime time)
+        {
+            
+        }
+
+        public override void Resized()
+        {
+            
+        }
+    }

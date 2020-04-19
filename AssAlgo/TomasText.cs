@@ -24,6 +24,7 @@ namespace AssAlgo
             get => _text.CharacterSize;
             set => _text.CharacterSize = value;
         }
+        public int Z { get; set; } = 0;
 
         public void Draw(RenderTarget target, RenderStates states)
         {

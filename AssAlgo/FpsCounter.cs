@@ -8,6 +8,7 @@ namespace AssAlgo
     {
         public bool Initialized { get; set; }
         public bool Visible { get; set; }
+        public int Z { get; set; } = 0;
 
         private Text _fpsText;
         private Text _deltaDrawText;
