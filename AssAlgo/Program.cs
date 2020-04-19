@@ -23,8 +23,6 @@ namespace AssAlgo
         {
             TomasEngine engine = new TomasEngine("FUCK", 800,600,VideoMode.DesktopMode);
 
-            engine.CreateEntity<GameController>();
-
             var button = engine.CreateEntity<Button>();
             button.Size = new Vector2f(100, 50);
             button.Position = new Vector2f(300, 300);
@@ -34,6 +32,7 @@ namespace AssAlgo
 
             FpsCounter fpsCounter = new FpsCounter();
             engine.HandleEntity(fpsCounter);
+            engine.CreateEntity<GameController>();
             engine.Run();
             return;
 

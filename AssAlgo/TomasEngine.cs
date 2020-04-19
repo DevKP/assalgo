@@ -75,7 +75,7 @@ namespace AssAlgo
             get => _mousePos;
         }
 
-        public Vector2u WindowsSize => _windowsSize;
+        public Vector2u WindowsSize => _window.Size;
 
         public TomasEngine(string title, uint width, uint height, VideoMode mode)
         {

@@ -2,6 +2,7 @@
 using SFML.System;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Text;
 
 namespace AssAlgo
@@ -11,6 +12,9 @@ namespace AssAlgo
         public bool Initialized  { get; set;}
 
         public bool Visible { get; set; }
+
+        private SplashScreen _splash;
+        private Clock _clock;
 
         Slider _fuckingSlider;
         Slider Slider;
@@ -31,6 +35,8 @@ namespace AssAlgo
 
         public void Init(TomasEngine tooo)
         {
+            
+
             _fuckingSlider = tooo.CreateEntity<Slider>();
             _fuckingSlider.Position = new Vector2f(100,100);
             _fuckingSlider.Size = new Vector2f(200, 30);
@@ -101,12 +107,16 @@ namespace AssAlgo
                     _fuckingText.Text = Slider.Value.ToString();
                 };
 
+            _splash = tooo.CreateEntity<SplashScreen>();
+            _clock = new Clock();
+
             Initialized = true;
         }
 
         public void LogicUpdate(TomasEngine engine, TomasTime time)
         {
-            
+            if (_clock.ElapsedTime.AsSeconds() > 3)
+                _splash.Visible = false;
         }
 
         public void LogicUpdateAsync(TomasEngine engine, TomasTime time)
