@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using SFML.Graphics;
@@ -20,6 +21,9 @@ namespace AssAlgo
         private long _targetMicrosec;
         private Vector2u _windowsSize;
         private Vector2i _mousePos;
+
+        public Font arial = new Font("Arial.ttf");
+        public Font opensense = new Font("OpenSans-Light.ttf");
 
         /// <summary>Event handler for the TextEntered event</summary>
         public event EventHandler<TextEventArgs> TextEntered;
@@ -96,7 +100,7 @@ namespace AssAlgo
             _window.MouseButtonReleased += (o, a) => MouseButtonReleased?.Invoke(this, a);
             //////////////
 
-            _clearColor = Color.White;
+            _clearColor = new Color(45,45,45);
             TargetFramerate = 120;
 
             _entities = new List<IEntity>();
@@ -114,31 +118,42 @@ namespace AssAlgo
 
         public int HandleEntity(IEntity entity)
         {
+            entity.Init(this);
             _entities.Add(entity);
             return _entities.Count;
         }
         public T CreateEntity<T>() where T: IEntity
         {
-            Type[] types = new Type[1];
-            types[0] = typeof(TomasEngine);
-            IEntity ent;
+            Type[] types = { typeof(TomasEngine) };
+            IEntity entity;
             if (typeof(T).GetConstructor(types) != null)
-                ent = Activator.CreateInstance(typeof(T), this) as IEntity;
+                entity = Activator.CreateInstance(typeof(T), this) as IEntity;
             else
-                ent = Activator.CreateInstance(typeof(T)) as IEntity;
-            _entities.Add(ent);
-            return (T)ent;
+                entity = Activator.CreateInstance(typeof(T)) as IEntity;
+
+            entity.Init(this);
+            _entities.Add(entity);
+            return (T)entity;
         }
+
+        public void RemoveEntity(IEntity entity)
+        {
+            _entities.Remove(entity);
+        }
+
         public void Run()
         {
-            
-
-            InitEntities();
+            //InitEntities();
 
             _window.SetVisible(true);
+            _window.SetFramerateLimit(120);
 
             Clock engineClock = new Clock();
             Clock deltaClock = new Clock();
+            Clock debugUpdateClock = new Clock();
+            Clock debugDrawClock = new Clock();
+
+            TomasTime tomasTime = new TomasTime();
 
             while (_window.IsOpen)
             {
@@ -146,24 +161,25 @@ namespace AssAlgo
 
                 _window.Clear(_clearColor);
 
-                TomasTime tomasTime = new TomasTime(0, 0, 1.0f)
-                {
-                    TicksDelta = deltaClock.Restart().AsMicroseconds(),
-                    EstimatedTicks = engineClock.ElapsedTime.AsMicroseconds()
-                };
-                UpdateEntities(tomasTime);
+                tomasTime.TicksDelta = deltaClock.Restart().AsMicroseconds();
+                tomasTime.EstimatedTicks = engineClock.ElapsedTime.AsMicroseconds();
 
+                debugUpdateClock.Restart();
+                UpdateEntities(tomasTime);
+                tomasTime.LastUpdateTime = debugUpdateClock.Restart().AsMicroseconds();
+
+                debugDrawClock.Restart();
                 DrawEntities();
+                tomasTime.LastDrawTime = debugDrawClock.Restart().AsMicroseconds();
 
                 _window.Display();
 
-
-                if (deltaClock.ElapsedTime.AsMicroseconds() < _targetMicrosec)
-                {
-                    int waitMsec = (int) (_targetMicrosec - deltaClock.ElapsedTime.AsMicroseconds()) / 1000;
-                    if (waitMsec > 0)
-                        Thread.Sleep(waitMsec);
-                }
+                //if (deltaClock.ElapsedTime.AsMicroseconds() < _targetMicrosec)
+                //{
+                //    int waitMsec = (int) (_targetMicrosec - deltaClock.ElapsedTime.AsMicroseconds()) / 1000;
+                //    if (waitMsec > 0)
+                //        Thread.Sleep(waitMsec);
+                //}
 
                 //Thread.Sleep((int)(_targetMicrosec - deltaClock.ElapsedTime.AsMicroseconds()))
             }
@@ -199,11 +215,12 @@ namespace AssAlgo
 
         private void DrawEntities()
         {
-            foreach (var entity in _entities)
-            {
-                if(entity.Initialized)
-                    _window.Draw(entity);
-            }
+            //foreach (var entity in _entities)
+            //{
+            //    _window.Draw(entity);
+
+            //}
+            _entities.ForEach(e => _window.Draw(e));
         }
     }
 }

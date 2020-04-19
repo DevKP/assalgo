@@ -22,24 +22,18 @@ namespace AssAlgo
         private static void Main(string[] args)
         {
             TomasEngine engine = new TomasEngine("FUCK", 800,600,VideoMode.DesktopMode);
-            TestEntity test = new TestEntity();
-            TestTextController controllertest = new TestTextController();
-            MouseController mouseController = new MouseController();
-            FpsCounter fpsCounter = new FpsCounter();
-            //Draggable grag = new Draggable();
-            //engine.HandleEntity(grag);
 
+            engine.CreateEntity<GameController>();
 
             var button = engine.CreateEntity<Button>();
             button.Size = new Vector2f(100, 50);
             button.Position = new Vector2f(300, 300);
 
-            engine.CreateEntity<ButtonArray>();
+            //var slider = engine.CreateEntity<Slider>();
+            //slider.Position = new Vector2f(300, 300);
 
+            FpsCounter fpsCounter = new FpsCounter();
             engine.HandleEntity(fpsCounter);
-            engine.HandleEntity(test);
-            engine.HandleEntity(controllertest);
-            engine.HandleEntity(mouseController);
             engine.Run();
             return;
 
