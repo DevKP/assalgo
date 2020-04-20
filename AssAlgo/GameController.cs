@@ -29,6 +29,10 @@ namespace AssAlgo
         CheckerBox _checkerBox2;
         CheckerBox _checkerBox3;
 
+        private Paint paint;
+        private Button pantButton;
+        private ColorPicker colorPicker;
+
         public void Draw(RenderTarget target, RenderStates states)
         {
             
@@ -111,29 +115,39 @@ namespace AssAlgo
                 };
 
 
-            var paint = tooo.CreateEntity<Paint>();
+            paint = tooo.CreateEntity<Paint>();
             paint.Size = new Vector2f(800, 600);
 
-            var but = tooo.CreateEntity<Button>();
-            but.Size = new Vector2f(100, 30);
-            but.Position = new Vector2f(10, 550);
-            but.Text = "Paint!";
-            but.TextSize = 16;
-            but.TextFont = tooo.opensense_reg;
+            pantButton = tooo.CreateEntity<Button>();
+            pantButton.Size = new Vector2f(100, 30);
+            pantButton.Position = new Vector2f(10, 550);
+            pantButton.Text = "Paint!";
+            pantButton.TextSize = 16;
+            pantButton.TextFont = tooo.opensense_reg;
 
 
-            var cp = tooo.CreateEntity<ColorPicker>();
-            cp.Position = new Vector2f(600, 450);
-            cp.Size = new Vector2f(150, 100);
-            cp.OnColorChanged += (c, _) => paint.BrushColor = (c as ColorPicker).RGBColor;
+            colorPicker = tooo.CreateEntity<ColorPicker>();
+            colorPicker.Position = new Vector2f(600, 450);
+            colorPicker.Size = new Vector2f(150, 100);
+            colorPicker.OnColorChanged += (c, _) => paint.BrushColor = (c as ColorPicker).RGBColor;
 
-            but.OnClicked += (_, x) => cp.Visible = paint.Visible = !paint.Visible;
+            pantButton.OnClicked += (_, x) => colorPicker.Visible = paint.Visible = !paint.Visible;
 
             _splash = tooo.CreateEntity<SplashScreen>();
-            _splash.Z = 10;
+            _splash.Z = 420;
             _clock = new Clock();
 
+            tooo.OnResized += Tooo_OnResized;
+
             Initialized = true;
+        }
+
+        private void Tooo_OnResized(object sender, SFML.Window.SizeEventArgs e)
+        {
+            pantButton.Position = new Vector2f(10,e.Height - pantButton.Size.Y - 10);
+            colorPicker.Position = new Vector2f(e.Width - colorPicker.Size.X - 10, e.Height - colorPicker.Size.Y - 10);
+            colorPicker.Size = colorPicker.Size;
+            paint.Size = new Vector2f(e.Width,e.Height);
         }
 
         public void LogicUpdate(TomasEngine engine, TomasTime time)

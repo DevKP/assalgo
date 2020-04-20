@@ -15,7 +15,7 @@ namespace AssAlgo
 
     class Slider : Interactive
     {
-        public override bool Visible { get; set; }
+        public override bool Visible { get; set; } = true;
         public override bool Initialized { get; set; }
         public override int Z { get; set; } = 0;
 

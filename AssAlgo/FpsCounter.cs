@@ -8,7 +8,7 @@ namespace AssAlgo
     {
         public bool Initialized { get; set; }
         public bool Visible { get; set; }
-        public int Z { get; set; } = 0;
+        public int Z { get; set; } = 100;
 
         private Text _fpsText;
         private Text _deltaDrawText;
@@ -29,22 +29,30 @@ namespace AssAlgo
             _fpsText = new Text("0FPS", engine.arial)
             {
                 CharacterSize = 24,
-                FillColor = Color.White
+                FillColor = Color.White,
+                OutlineColor = Color.Black,
+                OutlineThickness = 1
             };
             _deltaDrawText = new Text("0ms", engine.arial)
             {
                 CharacterSize = 24,
-                FillColor = Color.White
+                FillColor = Color.White,
+                OutlineColor = Color.Black,
+                OutlineThickness = 1
             };
             _deltaUpdateText = new Text("0ms", engine.arial)
             {
                 CharacterSize = 24,
-                FillColor = Color.White
+                FillColor = Color.White,
+                OutlineColor = Color.Black,
+                OutlineThickness = 1
             };
             _objText = new Text("0 Enities", engine.arial)
             {
                 CharacterSize = 24,
-                FillColor = Color.White
+                FillColor = Color.White,
+                OutlineColor = Color.Black,
+                OutlineThickness = 1
             };
 
 

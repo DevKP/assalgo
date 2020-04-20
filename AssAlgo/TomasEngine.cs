@@ -47,6 +47,8 @@ namespace AssAlgo
         /// <summary>Event handler for the MouseMoved event</summary>
         //public event EventHandler<MouseMoveEventArgs> MouseMoved = delegate { };
 
+        public event EventHandler<SizeEventArgs> OnResized;
+
         public int EntityNumber { get => _entities.Count; }
 
         public Color ClearColor
@@ -91,6 +93,7 @@ namespace AssAlgo
             {
                 _window.SetView(new View(new FloatRect(0f, 0f, x.Width, x.Height)));
                 _windowsSize = new Vector2u(x.Width, x.Height);
+                OnResized?.Invoke(this, x);
             };
             _window.MouseButtonPressed += (o, a) => MouseButtonPressed?.Invoke(this, a);
             _window.MouseMoved += (o, a) =>

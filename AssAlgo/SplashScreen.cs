@@ -9,7 +9,7 @@ namespace AssAlgo
         public bool Initialized { get; set; }
 
         public bool Visible { get; set; } = true;
-        public int Z { get; set; } = 0;
+        public int Z { get; set; } = 420;
 
         private Texture tex;
         private RectangleShape _rectangleShape;
