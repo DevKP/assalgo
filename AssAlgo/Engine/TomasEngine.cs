@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Threading;
-using System.Threading.Tasks;
-using SFML.Graphics;
+﻿using SFML.Graphics;
 using SFML.System;
 using SFML.Window;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace AssAlgo
 {
@@ -17,6 +14,7 @@ namespace AssAlgo
         private Color _clearColor;
 
         private List<IEntity> _entities;
+        private bool _zOrderValid;
         private int _targetFramerate;
         private long _targetMicrosec;
         private Vector2u _windowsSize;
@@ -67,7 +65,7 @@ namespace AssAlgo
             }
         }
 
-        public RenderWindow ActiveWindow 
+        public RenderWindow ActiveWindow
         {
             get => _window;
             set => _window = value;
@@ -82,10 +80,10 @@ namespace AssAlgo
 
         public TomasEngine(string title, uint width, uint height, VideoMode mode)
         {
-            _window = new RenderWindow(mode, title,Styles.Default, new ContextSettings() {AntialiasingLevel = 1 });
+            _window = new RenderWindow(mode, title, Styles.Default, new ContextSettings() { AntialiasingLevel = 1 });
             _window.SetVisible(false);
-            _window.Size = new Vector2u(width,height);
-            _window.SetView(new View(new FloatRect(0f,0f, width, height)));
+            _window.Size = new Vector2u(width, height);
+            _window.SetView(new View(new FloatRect(0f, 0f, width, height)));
 
             //////////////
             _window.Closed += (o, _) => _window.Close();
@@ -95,19 +93,85 @@ namespace AssAlgo
                 _windowsSize = new Vector2u(x.Width, x.Height);
                 OnResized?.Invoke(this, x);
             };
-            _window.MouseButtonPressed += (o, a) => MouseButtonPressed?.Invoke(this, a);
+            _window.MouseButtonPressed += DisposeMousePressed;
             _window.MouseMoved += (o, a) =>
             {
                 _mousePos = new Vector2i(a.X, a.Y);
             };
-            _window.MouseButtonReleased += (o, a) => MouseButtonReleased?.Invoke(this, a);
+            _window.MouseMoved += DisposeMouseMoved;
+            _window.MouseButtonReleased += DisposeMouseReleased;
             _window.MouseWheelScrolled += (o, a) => MouseWheelScrolled?.Invoke(this, a);
             //////////////
 
-            _clearColor = new Color(45,45,45);
+            _clearColor = new Color(45, 45, 45);
             TargetFramerate = 120;
 
             _entities = new List<IEntity>();
+        }
+
+        private void DisposeMousePressed(object sender, MouseButtonEventArgs a)
+        {
+            var descendEntities = _entities.OrderByDescending(e => e.Z);
+            foreach (var entity in descendEntities)
+            {
+                if(entity is UIEntity)
+                {
+                    //(entity as UIEntity).OnEntityMouseDown(this, a);
+                    UIEntity uiEntity = entity as UIEntity;
+                    if (uiEntity.Visible && PointInRectangle(new FloatRect(uiEntity.GlobalPosition, uiEntity.Size), new Vector2f(a.X,a.Y)))
+                    {
+                       (entity as UIEntity).OnEntityMouseDown(this, a);
+                        (entity as UIEntity).mouseState = MouseButtonState.Pressed;
+                        break;
+                    }
+                }
+            }
+        }
+
+        private void DisposeMouseReleased(object sender, MouseButtonEventArgs a)
+        {
+            var descendEntities = _entities.OrderByDescending(e => e.Z);
+            foreach (var entity in descendEntities)
+            {
+                if (entity is UIEntity)
+                {
+                    UIEntity uiEntity = entity as UIEntity;
+                    uiEntity.OnEntityMouseUp(this, a);
+                    (entity as UIEntity).mouseState = MouseButtonState.Released;
+                }
+            }
+        }
+
+        private void DisposeMouseMoved(object sender, MouseMoveEventArgs a)
+        {
+            bool sended = false;
+            for (int i = 0; i < _entities.Count; i++)
+            {
+                var entity = _entities[_entities.Count - i - 1];
+                if (entity is UIEntity)
+                {
+                    UIEntity uiEntity = entity as UIEntity;
+                    if (uiEntity.Visible && PointInRectangle(new FloatRect(uiEntity.GlobalPosition, uiEntity.Size), new Vector2f(a.X, a.Y)) && !sended)
+                    {
+                        uiEntity.OnEntityMouseMoved(this, a);
+                        uiEntity.Hover = true;
+                        sended = true;
+                    }
+                    else
+                        (entity as UIEntity).Hover = false;
+                }
+            }
+        }
+
+        private bool PointInRectangle(FloatRect rect, Vector2f point)
+        {
+            return rect.Left < point.X && point.X < (rect.Left + rect.Width) &&
+                rect.Top < point.Y && point.Y < (rect.Top + rect.Height);
+        }
+
+        public void ZInvalidate()
+        {
+            _zOrderValid = false;
         }
 
         public IEntity GetEntity(int id)
@@ -126,14 +190,17 @@ namespace AssAlgo
             _entities.Add(entity);
             return _entities.Count;
         }
-        public T CreateEntity<T>() where T: IEntity
+        public T CreateEntity<T, P>(P parent)
+            where T : IEntity
+            where P : IEntity?
         {
-            Type[] types = { typeof(TomasEngine) };
-            IEntity entity;
+            Type[] types = { typeof(TomasEngine),
+                            typeof(P)};
+            T entity;
             if (typeof(T).GetConstructor(types) != null)
-                entity = Activator.CreateInstance(typeof(T), this) as IEntity;
+                entity = (T)Activator.CreateInstance(typeof(T), this, parent);
             else
-                entity = Activator.CreateInstance(typeof(T)) as IEntity;
+                entity = (T)Activator.CreateInstance(typeof(T));
 
             entity.Init(this);
             _entities.Add(entity);
@@ -164,7 +231,7 @@ namespace AssAlgo
 
             while (_window.IsOpen)
             {
-                if(frameCount % 2 == 0)
+                if (frameCount % 2 == 0)
                     _window.DispatchEvents();
 
                 _window.Clear(_clearColor);
@@ -214,6 +281,12 @@ namespace AssAlgo
 
         private void UpdateEntities(TomasTime t)
         {
+            if (_zOrderValid == false)
+            {
+                _entities = _entities.OrderBy(e => e.Z).ToList();
+                _zOrderValid = true;
+            }
+
             foreach (var entity in _entities)
             {
                 if (entity.Initialized)

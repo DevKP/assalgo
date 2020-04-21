@@ -1,16 +1,13 @@
 ﻿using SFML.Graphics;
 using SFML.System;
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace AssAlgo
 {
-    class ColorPicker : Interactive
+    class ColorPicker : UIEntity
     {
         public override bool Visible { get; set; }
         public override bool Initialized { get; set; }
-        public override int Z { get; set; } = 1;
 
         public event EventHandler<EventArgs> OnColorChanged;
 
@@ -25,23 +22,20 @@ namespace AssAlgo
             get => _colorRect.FillColor;
         }
 
-        public ColorPicker(TomasEngine o) : base(o)
+        public ColorPicker(TomasEngine o, UIEntity parent) : base(o, parent)
         {
 
         }
-        public override void Init(TomasEngine o)
+        public override void Init(TomasEngine engine)
         {
             _background = new RectangleShape(new Vector2f(Size.X, Size.Y));
             _background.OutlineThickness = 1;
             _background.OutlineColor = new Color(120, 120, 120);
             _colorRect = new RectangleShape(new Vector2f(Size.X, Size.Y * 0.25f));
 
-            _hueSlider = o.CreateEntity<Slider>();
-            _hueSlider.Z = 2;
-            _saturationSlider = o.CreateEntity<Slider>();
-            _saturationSlider.Z = 2;
-            _brightnessSlider = o.CreateEntity<Slider>();
-            _brightnessSlider.Z = 2;
+            _hueSlider = engine.CreateEntity<Slider, UIEntity>(this);
+            _saturationSlider = engine.CreateEntity<Slider, UIEntity>(this);
+            _brightnessSlider = engine.CreateEntity<Slider, UIEntity>(this);
 
             _hueSlider.OnValueChanged += OnValueChanged;
             _saturationSlider.OnValueChanged += OnValueChanged;
@@ -92,10 +86,6 @@ namespace AssAlgo
                 (byte)Math.Round(b * 255));
         }
 
-        public override void Clicked(Vector2f localCoords)
-        {
-            
-        }
 
         public override void Draw(RenderTarget target, RenderStates states)
         {
@@ -108,7 +98,7 @@ namespace AssAlgo
         }
 
 
-        public override void LogicUpdate(TomasEngine engine, TomasTime time)
+        public override void UIUpdate(TomasEngine engine, TomasTime time)
         {
             _hueSlider.Visible = Visible;
             _saturationSlider.Visible = Visible;
@@ -117,7 +107,7 @@ namespace AssAlgo
 
         public override void LogicUpdateAsync(TomasEngine engine, TomasTime time)
         {
-            
+
         }
 
         public override void Resized()
@@ -125,11 +115,11 @@ namespace AssAlgo
             _background.Size = Size;
             _colorRect.Size = new Vector2f(Size.X, Size.Y * 0.25f);
 
-            _hueSlider.Position = new Vector2f(0, Size.Y * 0.25f * 1) + Position;
+            _hueSlider.Position = new Vector2f(0, Size.Y * 0.25f * 1);
             _hueSlider.Size = new Vector2f(Size.X, Size.Y * 0.25f);
-            _saturationSlider.Position = new Vector2f(0, Size.Y * 0.25f * 2) + Position;
+            _saturationSlider.Position = new Vector2f(0, Size.Y * 0.25f * 2);
             _saturationSlider.Size = new Vector2f(Size.X, Size.Y * 0.25f);
-            _brightnessSlider.Position = new Vector2f(0, Size.Y * 0.25f * 3) + Position;
+            _brightnessSlider.Position = new Vector2f(0, Size.Y * 0.25f * 3);
             _brightnessSlider.Size = new Vector2f(Size.X, Size.Y * 0.25f);
         }
     }

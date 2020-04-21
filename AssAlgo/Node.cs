@@ -1,7 +1,4 @@
-﻿using System;
-using System.Reflection.Metadata.Ecma335;
-using Microsoft.VisualBasic.CompilerServices;
-using SFML.System;
+﻿using SFML.System;
 
 namespace AssAlgo
 {
@@ -21,7 +18,7 @@ namespace AssAlgo
             get => _position;
             set => _position = value;
         }
-        
+
         public float F { get; set; } = 0;
         public float G { get; set; } = 0;
         public float H { get; set; } = 0;

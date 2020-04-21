@@ -1,11 +1,11 @@
-﻿using System;
+﻿using SFML.Graphics;
+using SFML.System;
+using SFML.Window;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using SFML.Graphics;
-using SFML.System;
-using SFML.Window;
 
 namespace AssAlgo
 {
@@ -21,9 +21,9 @@ namespace AssAlgo
 
         private static void Main(string[] args)
         {
-            TomasEngine engine = new TomasEngine("FUCK", 800,600,VideoMode.DesktopMode);
+            TomasEngine engine = new TomasEngine("FUCK", 800, 600, VideoMode.DesktopMode);
 
-            var button = engine.CreateEntity<Button>();
+            var button = engine.CreateEntity<Button, UIEntity>(parent: null);
             button.Size = new Vector2f(100, 50);
             button.Position = new Vector2f(300, 300);
 
@@ -32,19 +32,19 @@ namespace AssAlgo
 
             FpsCounter fpsCounter = new FpsCounter();
             engine.HandleEntity(fpsCounter);
-            engine.CreateEntity<GameController>();
+            engine.CreateEntity<GameController, IEntity>(parent: null);
             engine.Run();
             return;
 
-            field = new List<Node>(60*60);
+            field = new List<Node>(60 * 60);
             for (var y = 0; y < 60; y++)
-            for (var x = 0; x < 60; x++)
-                field.Add(new Node(x, y));
+                for (var x = 0; x < 60; x++)
+                    field.Add(new Node(x, y));
 
             for (int i = 0; i < 30; i++)
             {
-                
-                var tmp = field[60 * 15 + i+5];
+
+                var tmp = field[60 * 15 + i + 5];
                 tmp.State = NodeState.Obstacle;
                 //field[30 * 15 + i] = tmp;
             }
@@ -65,7 +65,7 @@ namespace AssAlgo
             using (var window = new RenderWindow(VideoMode.DesktopMode, "A* PathFinding"))
             {
                 var rec = new RectangleShape();
-                
+
                 window.Closed += (o, _) => window.Close();
 
                 Task.Run((() => AStarAlgorithm(start, end)));
@@ -73,7 +73,7 @@ namespace AssAlgo
                 while (window.IsOpen)
                 {
                     window.DispatchEvents();
-                    window.Clear(new Color(70,70,70));
+                    window.Clear(new Color(70, 70, 70));
 
                     Update();
 
@@ -86,7 +86,7 @@ namespace AssAlgo
 
         private static void Draw(RenderWindow window)
         {
-            
+
             var openListCopy = openList.ToArray();
             var closedListCopy = closedList.ToArray();
 
@@ -188,7 +188,7 @@ namespace AssAlgo
                     }
 
                     return path;
-                    
+
                     //Thread.Sleep(1000*60*60);
                 }
 

@@ -1,16 +1,14 @@
 ﻿using SFML.Graphics;
 using SFML.System;
+using SFML.Window;
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace AssAlgo
 {
-    class Paint : Interactive
+    class Paint : UIEntity
     {
         public override bool Visible { get; set; }
         public override bool Initialized { get; set; }
-        public override int Z { get; set; } = 0;
 
         private RenderTexture _renderTexture;
         private RectangleShape rectangleShape;
@@ -29,7 +27,7 @@ namespace AssAlgo
             }
         }
 
-        public Paint(TomasEngine o) : base(o)
+        public Paint(TomasEngine o, IEntity p) : base(o,p)
         {
 
         }
@@ -51,25 +49,42 @@ namespace AssAlgo
 
             _line = new VertexArray(PrimitiveType.LineStrip);
 
-            o.MouseWheelScrolled += (_, m) => _brash.Radius = _cursor.Radius = _cursor.Radius + m.Delta;
-            OnMousePressed += (s, a) => _lastPos = _brash.Position;
-            OnMouseReleased += (s, a) => _lastPos = new Vector2f(-1,-1);
+            o.MouseWheelScrolled += (_, m) => 
+            {
+               
+                if(m.Delta > 0)
+                    m.Delta = MathF.Max(_cursor.Radius * m.Delta * 0.1f, 1f);
+                else
+                    m.Delta = MathF.Min(_cursor.Radius * m.Delta * 0.1f, -1f);
+                _brash.Radius = _cursor.Radius = _cursor.Radius + m.Delta;
+                _cursor.Position = _cursor.Position - new Vector2f(m.Delta, m.Delta);
+            };
 
             Initialized = true;
         }
 
+        public override void OnEntityMouseDown(TomasEngine engine, MouseButtonEventArgs a) 
+        { _lastPos = _brash.Position; }
+        public override void OnEntityMouseUp(TomasEngine engine, MouseButtonEventArgs a)
+        { _lastPos = new Vector2f(-1, -1); }
+        public override void OnEntityMouseMoved(TomasEngine engine, MouseMoveEventArgs a)
+        {
+            var mCoords = _renderTexture.MapPixelToCoords(new Vector2i(a.X,a.Y));
+            var LocalMouse = mCoords - GlobalPosition;
+            _brash.Position = new Vector2f(LocalMouse.X - _cursor.Radius, LocalMouse.Y - _cursor.Radius);
+            _cursor.Position = new Vector2f(LocalMouse.X - _cursor.Radius, LocalMouse.Y - _cursor.Radius);
+        }
 
-       
         public override void Draw(RenderTarget target, RenderStates states)
         {
             if (Visible)
             {
                 states.Transform *= Transform;
-                if (Pressed)
+                if (mouseState == MouseButtonState.Pressed)
                 {
                     _renderTexture.Draw(_brash);
 
-                    if(_lastPos != new Vector2f(-1,-1))
+                    if (_lastPos != new Vector2f(-1, -1))
                     {
                         var delta = _brash.Position - _lastPos;
                         var tmp = _brash.Position;
@@ -81,35 +96,30 @@ namespace AssAlgo
 
                         _lastPos = tmp;
                     }
-                    
+
                     _renderTexture.Display();
                 }
 
                 target.Draw(rectangleShape, states);
                 //target.Draw(_line, states);
 
-                if (Hover && !Pressed)
+                if (Hover && mouseState == MouseButtonState.Released)
                     target.Draw(_cursor, states);
             }
         }
 
-        
-        public override void LogicUpdate(TomasEngine engine, TomasTime time)
-        {
-            var mCoords = _renderTexture.MapPixelToCoords(engine.MousePosition);
-            var LocalMouse = mCoords - Position;
-            _brash.Position = new Vector2f(LocalMouse.X - _cursor.Radius, LocalMouse.Y - _cursor.Radius);
-            _cursor.Position = new Vector2f(LocalMouse.X - _cursor.Radius, LocalMouse.Y - _cursor.Radius);
 
-            //if(Pressed)
-               // _line.Append(new Vertex(new Vector2f(LocalMouse.X,LocalMouse.Y),_brash.FillColor));
+        public override void UIUpdate(TomasEngine engine, TomasTime time)
+        {
+            if(!Hover && this.mouseState == MouseButtonState.Pressed)
+            {
+                _lastPos = engine.ActiveWindow.MapPixelToCoords(engine.MousePosition) 
+                    - GlobalPosition - new Vector2f(_cursor.Radius, _cursor.Radius);
+            }
+            // _line.Append(new Vertex(new Vector2f(LocalMouse.X,LocalMouse.Y),_brash.FillColor));
         }
 
         public override void LogicUpdateAsync(TomasEngine engine, TomasTime time)
-        {
-            
-        }
-        public override void Clicked(Vector2f localCoords)
         {
 
         }

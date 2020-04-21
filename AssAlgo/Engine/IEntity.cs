@@ -1,13 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Net.Sockets;
-using System.Text;
-using SFML.Graphics;
+﻿using SFML.Graphics;
 
 namespace AssAlgo
 {
     public interface IEntity : Drawable
     {
+        public IEntity Parent { get; set; }
+
         public int Z { get; set; }
         public bool Initialized { get; }
         public bool Visible { get; set; }
@@ -19,7 +17,7 @@ namespace AssAlgo
     public class UpdateEventArgs
     {
         public TomasTime EngineTime { get; }
-        public UpdateEventArgs(TomasTime time) 
+        public UpdateEventArgs(TomasTime time)
             => EngineTime = time;
     }
 }

@@ -1,19 +1,18 @@
 ﻿using SFML.Graphics;
 using SFML.System;
+using SFML.Window;
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace AssAlgo
 {
-    class Button : Interactive
+    class Button : UIEntity
     {
-        public override bool Visible { get; set; }
+        public override bool Visible { get; set; } = true;
         public override bool Initialized { get; set; }
 
         public event EventHandler<EventArgs> OnClicked;
 
-        public Color BackgroundColor 
+        public Color BackgroundColor
         {
             get => _rect.FillColor;
             set => _rect.FillColor = value;
@@ -26,7 +25,11 @@ namespace AssAlgo
         public uint TextSize
         {
             get => _text.CharacterSize;
-            set => _text.CharacterSize = value;
+            set
+            {
+                _text.CharacterSize = value;
+                //Size = new Vector2f(_text.GetLocalBounds().Width, _text.GetLocalBounds().Height);
+            }
         }
 
         public Font TextFont
@@ -35,14 +38,12 @@ namespace AssAlgo
             set => _text.Font = value;
         }
 
-        public override int Z { get; set; }
-
         private RectangleShape _rect;
         private Text _text;
 
         private VertexArray _verts;
 
-        public Button(TomasEngine o) : base(o)
+        public Button(TomasEngine o, UIEntity p) : base(o, p)
         {
         }
         public override void Draw(RenderTarget target, RenderStates states)
@@ -55,12 +56,12 @@ namespace AssAlgo
         public override void Init(TomasEngine o)
         {
             _verts = new VertexArray(PrimitiveType.Quads, 4);
-            
+
             _rect = new RectangleShape(new SFML.System.Vector2f(Size.X, Size.Y));
-            _rect.FillColor = new Color(40,40,40);
+            _rect.FillColor = new Color(40, 40, 40);
             _rect.OutlineColor = new Color(60, 60, 60);
             _rect.OutlineThickness = 2;
-            
+
 
             _text = new Text("Хоба", o.opensense, 20);
             _text.FillColor = Color.White;
@@ -71,23 +72,24 @@ namespace AssAlgo
             Initialized = true;
         }
 
-        public override void LogicUpdate(TomasEngine engine, TomasTime time)
+        public override void UIUpdate(TomasEngine engine, TomasTime time)
         {
             if (Hover)
                 _rect.FillColor = new Color(60, 60, 60);
             else
                 _rect.FillColor = new Color(45, 45, 45);
 
-            if (Pressed)
+            if (mouseState == MouseButtonState.Pressed)
                 _rect.FillColor = new Color(45, 45, 45);
         }
 
         public override void LogicUpdateAsync(TomasEngine engine, TomasTime time)
         {
-            
+
         }
 
-        public override void Clicked(Vector2f localCoords)
+
+        public override void OnEntityMouseDown(TomasEngine engine, MouseButtonEventArgs a)
         {
             OnClicked?.Invoke(this, new EventArgs());
         }

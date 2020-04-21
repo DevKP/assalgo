@@ -1,8 +1,7 @@
 ﻿using SFML.Graphics;
 using SFML.System;
+using SFML.Window;
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace AssAlgo
 {
@@ -13,11 +12,10 @@ namespace AssAlgo
         Moving
     }
 
-    class Slider : Interactive
+    class Slider : UIEntity
     {
         public override bool Visible { get; set; } = true;
         public override bool Initialized { get; set; }
-        public override int Z { get; set; } = 0;
 
         public event EventHandler<EventArgs> OnValueChanged;
 
@@ -34,18 +32,12 @@ namespace AssAlgo
             set
             {
                 _value = value;
-                
             }
         }
 
-        public Slider(TomasEngine e) : base(e)
+        public Slider(TomasEngine e, UIEntity p) : base(e, p)
         {
 
-        }
-
-        public override void Clicked(Vector2f localCoords)
-        {
-            
         }
 
         public override void Draw(RenderTarget target, RenderStates states)
@@ -73,25 +65,25 @@ namespace AssAlgo
 
             Size = new Vector2f(500, 60);
 
-            OnMousePressed += (_, x) => 
-            {
-                var mCoords = o.ActiveWindow.MapPixelToCoords(o.MousePosition);
-                var sliderRect = _sliderPath.GetGlobalBounds();
-                sliderRect.Left += Position.X;
-                sliderRect.Top += Position.Y;
-                if (PointInRectangle(sliderRect, mCoords))
-                    _state = SliderState.Moving;
-            };
-
-            OnMouseReleased += (_, x) =>
-            {
-                _state = SliderState.Resting;
-            };
-
             //anotherSlider = o.CreateEntity<Slider>();
             //anotherSlider.Position = new Vector2f(200, 200);
 
             Initialized = true;
+        }
+
+        public override void OnEntityMouseDown(TomasEngine engine, MouseButtonEventArgs a)
+        {
+            var mCoords = engine.ActiveWindow.MapPixelToCoords(engine.MousePosition);
+            var sliderRect = _sliderPath.GetGlobalBounds();
+            sliderRect.Left += GlobalPosition.X;
+            sliderRect.Top += GlobalPosition.Y;
+            if (PointInRectangle(sliderRect, mCoords))
+                _state = SliderState.Moving;
+        }
+
+        public override void OnEntityMouseUp(TomasEngine engine, MouseButtonEventArgs a)
+        {
+            _state = SliderState.Resting;
         }
 
         private float RangeLimitF(float bottom, float value, float top)
@@ -107,7 +99,7 @@ namespace AssAlgo
             return to / from * value;
         }
 
-        public override void LogicUpdate(TomasEngine engine, TomasTime time)
+        public override void UIUpdate(TomasEngine engine, TomasTime time)
         {
             var sliderCenterPos = _slider.Size / 2;
             _slider.Position = new Vector2f(MapToRangeF(1000, _sliderPath.Size.X - _slider.Size.X, _value) +
@@ -115,9 +107,9 @@ namespace AssAlgo
 
             if (_state != SliderState.Moving)
             {
-                var sliderLocal = engine.ActiveWindow.MapPixelToCoords(engine.MousePosition) - Position;
+                var sliderLocal = engine.ActiveWindow.MapPixelToCoords(engine.MousePosition) - GlobalPosition;
                 var sliderRect = _slider.GetGlobalBounds();
-                if (PointInRectangle(sliderRect, sliderLocal))
+                if (Hover && PointInRectangle(sliderRect, sliderLocal))
                     _state = SliderState.Hovering;
                 else
                     _state = SliderState.Resting;
@@ -129,19 +121,20 @@ namespace AssAlgo
                     _slider.FillColor = new Color(85, 85, 85);
                     break;
                 case SliderState.Moving:
-                    var mouseLocal = engine.ActiveWindow.MapPixelToCoords(engine.MousePosition) - Position - _sliderPath.Position - _slider.Size / 2;
+                    var mouseLocal = engine.ActiveWindow.MapPixelToCoords(engine.MousePosition) - GlobalPosition
+                        - _sliderPath.Position - _slider.Size / 2;
                     _value = RangeLimitF(0, MapToRangeF(_sliderPath.Size.X - _slider.Size.X, 1000, mouseLocal.X), 1000);
                     OnValueChanged?.Invoke(this, new EventArgs());
                     break;
                 case SliderState.Hovering:
                     _slider.FillColor = new Color(100, 100, 100);
                     break;
-            }     
+            }
         }
 
         public override void LogicUpdateAsync(TomasEngine engine, TomasTime time)
         {
-            
+
         }
 
         public override void Resized()

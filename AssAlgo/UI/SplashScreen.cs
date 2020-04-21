@@ -1,22 +1,22 @@
-﻿using System;
-using SFML.Graphics;
+﻿using SFML.Graphics;
 using SFML.System;
+using System;
 
 namespace AssAlgo
 {
-    public class SplashScreen : IEntity
+    class SplashScreen : UIEntity
     {
-        public bool Initialized { get; set; }
-
-        public bool Visible { get; set; } = true;
-        public int Z { get; set; } = 420;
+        public override bool Visible { get; set; } = true;
+        public override bool Initialized { get; set; }
 
         private Texture tex;
         private RectangleShape _rectangleShape;
         private RectangleShape _logo;
         private Clock clock;
 
-        public void Draw(RenderTarget target, RenderStates states)
+        public SplashScreen(TomasEngine o, IEntity p) : base(o, p) { }
+
+        public override void Draw(RenderTarget target, RenderStates states)
         {
             if (Visible)
             {
@@ -26,7 +26,7 @@ namespace AssAlgo
             }
         }
 
-        public void Init(TomasEngine o)
+        public override void Init(TomasEngine o)
         {
             _rectangleShape = new RectangleShape(new Vector2f(o.WindowsSize.X, o.WindowsSize.Y))
             {
@@ -40,14 +40,15 @@ namespace AssAlgo
             };
             _logo.Position = new Vector2f((_rectangleShape.Size.X - _logo.Size.X) / 2,
                 (_rectangleShape.Size.Y - _logo.Size.Y) / 2);
-            //_logo.Scale = new Vector2f(-0.5f,-0.5f);
+
+            Size = _rectangleShape.Size;
 
             clock = new Clock();
 
             Initialized = true;
         }
 
-        public void LogicUpdate(TomasEngine engine, TomasTime time)
+        public override void UIUpdate(TomasEngine engine, TomasTime time)
         {
             float animationDuration = 0.8f;
             var a = clock.ElapsedTime.AsSeconds() / animationDuration;
@@ -71,19 +72,24 @@ namespace AssAlgo
 
                 //_rectangleShape.FillColor = new Color(45, 45, 45, (byte) (255 * animScale));
             }
-            if(a > 3 && a < 4)
+            if (a > 3 && a < 4)
             {
-                var b =  a - 3;
+                var b = a - 3;
 
                 var animScale = MathF.Cos(b * MathF.PI) / 2f + 0.5f;
                 _rectangleShape.FillColor = new Color(45, 45, 45, (byte)(255 * animScale));
-                _logo.FillColor = new Color(255, 255,255, (byte)(255 * animScale));
+                _logo.FillColor = new Color(255, 255, 255, (byte)(255 * animScale));
             }
         }
 
-        public void LogicUpdateAsync(TomasEngine engine, TomasTime time)
+        public override void LogicUpdateAsync(TomasEngine engine, TomasTime time)
         {
-            
+
+        }
+
+        public override void Resized()
+        {
+
         }
     }
 }

@@ -1,12 +1,11 @@
 ﻿using SFML.Graphics;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace AssAlgo
 {
     class TomasText : Transformable, IEntity
     {
+        public IEntity Parent { get; set; }
+
         public bool Initialized { get; set; }
         public bool Visible { get; set; } = true;
 
@@ -19,8 +18,8 @@ namespace AssAlgo
             set => _text.DisplayedString = value;
         }
 
-        public uint CharacterSize 
-        { 
+        public uint CharacterSize
+        {
             get => _text.CharacterSize;
             set => _text.CharacterSize = value;
         }
@@ -44,12 +43,12 @@ namespace AssAlgo
 
         public void LogicUpdate(TomasEngine engine, TomasTime time)
         {
-            
+
         }
 
         public void LogicUpdateAsync(TomasEngine engine, TomasTime time)
         {
-            
+
         }
     }
 }
