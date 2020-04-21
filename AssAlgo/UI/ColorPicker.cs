@@ -17,10 +17,7 @@ namespace AssAlgo
         private Slider _saturationSlider;
         private Slider _brightnessSlider;
 
-        public Color RGBColor
-        {
-            get => _colorRect.FillColor;
-        }
+        public Color RGBColor => _colorRect.FillColor;
 
         public ColorPicker(TomasEngine o, UIEntity parent) : base(o, parent)
         {

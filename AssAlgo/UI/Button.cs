@@ -1,4 +1,5 @@
-﻿using SFML.Graphics;
+﻿using AssAlgo.Engine;
+using SFML.Graphics;
 using SFML.System;
 using SFML.Window;
 using System;
@@ -9,6 +10,8 @@ namespace AssAlgo
     {
         public override bool Visible { get; set; } = true;
         public override bool Initialized { get; set; }
+
+        private Animator animator;
 
         public event EventHandler<EventArgs> OnClicked;
 
@@ -57,7 +60,7 @@ namespace AssAlgo
         {
             _verts = new VertexArray(PrimitiveType.Quads, 4);
 
-            _rect = new RectangleShape(new SFML.System.Vector2f(Size.X, Size.Y));
+            _rect = new RectangleShape(new Vector2f(Size.X, Size.Y));
             _rect.FillColor = new Color(40, 40, 40);
             _rect.OutlineColor = new Color(60, 60, 60);
             _rect.OutlineThickness = 2;
@@ -68,7 +71,8 @@ namespace AssAlgo
             _text.Position = new Vector2f((Size.X - _text.GetGlobalBounds().Width) / 2,
                 (Size.Y - _text.GetGlobalBounds().Height) / 2);
 
-            CanDrag = true;
+            animator = new Animator((int)Time.FromSeconds(0.2f).AsMicroseconds());
+
             Initialized = true;
         }
 
@@ -81,6 +85,9 @@ namespace AssAlgo
 
             if (mouseState == MouseButtonState.Pressed)
                 _rect.FillColor = new Color(45, 45, 45);
+
+            if(!animator.Completed)
+                this.Position += new Vector2f(animator.Step((int)time.TicksDelta) * 400, 0);
         }
 
         public override void LogicUpdateAsync(TomasEngine engine, TomasTime time)

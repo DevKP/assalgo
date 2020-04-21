@@ -1,4 +1,5 @@
-﻿using SFML.Graphics;
+﻿using AssAlgo.Engine;
+using SFML.Graphics;
 using SFML.System;
 using SFML.Window;
 using System;
@@ -7,8 +8,23 @@ namespace AssAlgo
 {
     class Paint : UIEntity
     {
-        public override bool Visible { get; set; }
+        private bool _visible;
+        public override bool Visible 
+        {
+            get => _visible;
+            set
+            {
+                _visible = value;
+                if (_visible)
+                {
+                    Position = Position + new Vector2f(0, Size.Y);
+                    inAnim.Reset();
+                }
+            }
+        }
         public override bool Initialized { get; set; }
+
+        private Animator inAnim;
 
         private RenderTexture _renderTexture;
         private RectangleShape rectangleShape;
@@ -60,6 +76,7 @@ namespace AssAlgo
                 _cursor.Position = _cursor.Position - new Vector2f(m.Delta, m.Delta);
             };
 
+            inAnim = new Animator((int)Time.FromSeconds(0.5f).AsMicroseconds());
             Initialized = true;
         }
 
@@ -115,6 +132,10 @@ namespace AssAlgo
             {
                 _lastPos = engine.ActiveWindow.MapPixelToCoords(engine.MousePosition) 
                     - GlobalPosition - new Vector2f(_cursor.Radius, _cursor.Radius);
+            }
+            if(Visible && !inAnim.Completed)
+            {
+                this.Position += new Vector2f(0, inAnim.Step((int)time.TicksDelta) * -Size.Y);
             }
             // _line.Append(new Vertex(new Vector2f(LocalMouse.X,LocalMouse.Y),_brash.FillColor));
         }

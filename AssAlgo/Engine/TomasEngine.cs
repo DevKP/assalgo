@@ -235,11 +235,11 @@ namespace AssAlgo
                     _window.DispatchEvents();
 
                 _window.Clear(_clearColor);
+                debugUpdateClock.Restart();
 
                 tomasTime.TicksDelta = deltaClock.Restart().AsMicroseconds();
                 tomasTime.EstimatedTicks = engineClock.ElapsedTime.AsMicroseconds();
 
-                debugUpdateClock.Restart();
                 UpdateEntities(tomasTime);
                 tomasTime.LastUpdateTime = debugUpdateClock.Restart().AsMicroseconds();
 
