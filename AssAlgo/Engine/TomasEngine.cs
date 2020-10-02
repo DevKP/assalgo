@@ -4,15 +4,13 @@ using SFML.Window;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using AssAlgo.UI;
 
 namespace AssAlgo
 {
 
     public class TomasEngine
     {
-        private RenderWindow _window;
-        private Color _clearColor;
-
         private List<IEntity> _entities;
         private bool _zOrderValid;
         private int _targetFramerate;
@@ -47,13 +45,9 @@ namespace AssAlgo
 
         public event EventHandler<SizeEventArgs> OnResized;
 
-        public int EntityNumber { get => _entities.Count; }
+        public int EntityNumber => _entities.Count;
 
-        public Color ClearColor
-        {
-            get => _clearColor;
-            set => _clearColor = value;
-        }
+        public Color ClearColor { get; set; }
 
         public int TargetFramerate
         {
@@ -65,48 +59,57 @@ namespace AssAlgo
             }
         }
 
-        public RenderWindow ActiveWindow
-        {
-            get => _window;
-            set => _window = value;
-        }
+        public RenderWindow ActiveWindow { get; set; }
 
-        public Vector2i MousePosition
-        {
-            get => _mousePos;
-        }
+        public Vector2i MousePosition => _mousePos;
 
-        public Vector2u WindowsSize => _window.Size;
+        public Vector2u WindowsSize => ActiveWindow.Size;
 
         public TomasEngine(string title, uint width, uint height, VideoMode mode)
         {
-            _window = new RenderWindow(mode, title, Styles.Default, new ContextSettings() { AntialiasingLevel = 1 });
-            _window.SetVisible(false);
-            _window.Size = new Vector2u(width, height);
-            _window.SetView(new View(new FloatRect(0f, 0f, width, height)));
+            ActiveWindow = new RenderWindow(mode, title, Styles.Default, new ContextSettings() { AntialiasingLevel = 1 });
+            ActiveWindow.SetVisible(false);
+            ActiveWindow.Size = new Vector2u(width, height);
+            ActiveWindow.SetView(new View(new FloatRect(0f, 0f, width, height)));
 
             //////////////
-            _window.Closed += (o, _) => _window.Close();
-            _window.Resized += (_, x) =>
+            ActiveWindow.Closed += (o, _) => ActiveWindow.Close();
+            ActiveWindow.Resized += (_, x) =>
             {
-                _window.SetView(new View(new FloatRect(0f, 0f, x.Width, x.Height)));
+                ActiveWindow.SetView(new View(new FloatRect(0f, 0f, x.Width, x.Height)));
                 _windowsSize = new Vector2u(x.Width, x.Height);
                 OnResized?.Invoke(this, x);
             };
-            _window.MouseButtonPressed += DisposeMousePressed;
-            _window.MouseMoved += (o, a) =>
+            ActiveWindow.MouseButtonPressed += DisposeMousePressed;
+            ActiveWindow.MouseMoved += (o, a) =>
             {
                 _mousePos = new Vector2i(a.X, a.Y);
             };
-            _window.MouseMoved += DisposeMouseMoved;
-            _window.MouseButtonReleased += DisposeMouseReleased;
-            _window.MouseWheelScrolled += (o, a) => MouseWheelScrolled?.Invoke(this, a);
+            ActiveWindow.MouseMoved += DisposeMouseMoved;
+            ActiveWindow.MouseButtonReleased += DisposeMouseReleased;
+            ActiveWindow.MouseWheelScrolled += (o, a) => MouseWheelScrolled?.Invoke(this, a);
+
+            ActiveWindow.KeyPressed += DisposeKeyPressed;
+            ActiveWindow.KeyReleased += DisposeKeyPressed;
             //////////////
 
-            _clearColor = new Color(45, 45, 45);
+            ClearColor = new Color(45, 45, 45);
             TargetFramerate = 120;
 
             _entities = new List<IEntity>();
+        }
+
+        private void DisposeKeyPressed(object sender, KeyEventArgs a)
+        {
+            var descendEntities = _entities.OrderByDescending(e => e.Z);
+            foreach (var entity in descendEntities)
+            {
+                if (!(entity is UIEntity)) continue;
+
+                var uiEntity = entity as UIEntity;
+                if (uiEntity.Visible)
+                    uiEntity.KeyboardState = a.Shift ? KeyboardButtonState.Shift : KeyboardButtonState.None;
+            }
         }
 
         private void DisposeMousePressed(object sender, MouseButtonEventArgs a)
@@ -114,16 +117,14 @@ namespace AssAlgo
             var descendEntities = _entities.OrderByDescending(e => e.Z);
             foreach (var entity in descendEntities)
             {
-                if(entity is UIEntity)
+                if (!(entity is UIEntity)) continue;
+                //(entity as UIEntity).OnEntityMouseDown(this, a);
+                var uiEntity = entity as UIEntity;
+                if (uiEntity.Visible && PointInRectangle(new FloatRect(uiEntity.GlobalPosition, uiEntity.Size), new Vector2f(a.X,a.Y)))
                 {
-                    //(entity as UIEntity).OnEntityMouseDown(this, a);
-                    UIEntity uiEntity = entity as UIEntity;
-                    if (uiEntity.Visible && PointInRectangle(new FloatRect(uiEntity.GlobalPosition, uiEntity.Size), new Vector2f(a.X,a.Y)))
-                    {
-                       (entity as UIEntity).OnEntityMouseDown(this, a);
-                        (entity as UIEntity).mouseState = MouseButtonState.Pressed;
-                        break;
-                    }
+                    (entity as UIEntity).OnEntityMouseDown(this, a);
+                    (entity as UIEntity).MouseState = MouseButtonState.Pressed;
+                    break;
                 }
             }
         }
@@ -137,7 +138,7 @@ namespace AssAlgo
                 {
                     UIEntity uiEntity = entity as UIEntity;
                     uiEntity.OnEntityMouseUp(this, a);
-                    (entity as UIEntity).mouseState = MouseButtonState.Released;
+                    (entity as UIEntity).MouseState = MouseButtonState.Released;
                 }
             }
         }
@@ -217,8 +218,8 @@ namespace AssAlgo
         {
             //InitEntities();
 
-            _window.SetVisible(true);
-            _window.SetFramerateLimit(120);
+            ActiveWindow.SetVisible(true);
+            ActiveWindow.SetFramerateLimit(120);
 
             Clock engineClock = new Clock();
             Clock deltaClock = new Clock();
@@ -229,12 +230,12 @@ namespace AssAlgo
 
             long frameCount = 0;
 
-            while (_window.IsOpen)
+            while (ActiveWindow.IsOpen)
             {
                 if (frameCount % 2 == 0)
-                    _window.DispatchEvents();
+                    ActiveWindow.DispatchEvents();
 
-                _window.Clear(_clearColor);
+                ActiveWindow.Clear(ClearColor);
                 debugUpdateClock.Restart();
 
                 tomasTime.TicksDelta = deltaClock.Restart().AsMicroseconds();
@@ -247,7 +248,7 @@ namespace AssAlgo
                 DrawEntities();
                 tomasTime.LastDrawTime = debugDrawClock.Restart().AsMicroseconds();
 
-                _window.Display();
+                ActiveWindow.Display();
                 frameCount += 1;
                 //if (deltaClock.ElapsedTime.AsMicroseconds() < _targetMicrosec)
                 //{
@@ -304,7 +305,7 @@ namespace AssAlgo
             //    _window.Draw(entity);
 
             //}
-            _entities.ForEach(e => _window.Draw(e));
+            _entities.ForEach(e => ActiveWindow.Draw(e));
         }
     }
 }

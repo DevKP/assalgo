@@ -1,17 +1,17 @@
-﻿using AssAlgo.Engine;
+﻿using System;
+using AssAlgo.Engine;
 using SFML.Graphics;
 using SFML.System;
 using SFML.Window;
-using System;
 
-namespace AssAlgo
+namespace AssAlgo.UI
 {
     class Button : UIEntity
     {
         public override bool Visible { get; set; } = true;
         public override bool Initialized { get; set; }
 
-        private Animator animator;
+        private Animator _animator;
 
         public event EventHandler<EventArgs> OnClicked;
 
@@ -28,11 +28,8 @@ namespace AssAlgo
         public uint TextSize
         {
             get => _text.CharacterSize;
-            set
-            {
-                _text.CharacterSize = value;
-                //Size = new Vector2f(_text.GetLocalBounds().Width, _text.GetLocalBounds().Height);
-            }
+            set => _text.CharacterSize = value;
+            //Size = new Vector2f(_text.GetLocalBounds().Width, _text.GetLocalBounds().Height);
         }
 
         public Font TextFont
@@ -60,34 +57,32 @@ namespace AssAlgo
         {
             _verts = new VertexArray(PrimitiveType.Quads, 4);
 
-            _rect = new RectangleShape(new Vector2f(Size.X, Size.Y));
-            _rect.FillColor = new Color(40, 40, 40);
-            _rect.OutlineColor = new Color(60, 60, 60);
-            _rect.OutlineThickness = 2;
+            _rect = new RectangleShape(new Vector2f(Size.X, Size.Y))
+            {
+                FillColor = new Color(40, 40, 40),
+                OutlineColor = new Color(60, 60, 60),
+                OutlineThickness = 2
+            };
 
 
-            _text = new Text("Хоба", o.opensense, 20);
-            _text.FillColor = Color.White;
+            _text = new Text("Хоба", o.opensense, 20) {FillColor = Color.White};
             _text.Position = new Vector2f((Size.X - _text.GetGlobalBounds().Width) / 2,
                 (Size.Y - _text.GetGlobalBounds().Height) / 2);
 
-            animator = new Animator((int)Time.FromSeconds(0.2f).AsMicroseconds());
+            _animator = new Animator((int)Time.FromSeconds(0.2f).AsMicroseconds());
 
             Initialized = true;
         }
 
         public override void UIUpdate(TomasEngine engine, TomasTime time)
         {
-            if (Hover)
-                _rect.FillColor = new Color(60, 60, 60);
-            else
+            _rect.FillColor = Hover ? new Color(60, 60, 60) : new Color(45, 45, 45);
+
+            if (MouseState == MouseButtonState.Pressed)
                 _rect.FillColor = new Color(45, 45, 45);
 
-            if (mouseState == MouseButtonState.Pressed)
-                _rect.FillColor = new Color(45, 45, 45);
-
-            if(!animator.Completed)
-                this.Position += new Vector2f(animator.Step((int)time.TicksDelta) * 400, 0);
+            if(!_animator.Completed)
+                this.Position += new Vector2f(_animator.Step((int)time.TicksDelta) * 400, 0);
         }
 
         public override void LogicUpdateAsync(TomasEngine engine, TomasTime time)

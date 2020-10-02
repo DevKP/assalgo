@@ -1,27 +1,31 @@
 ﻿using SFML.Graphics;
 using SFML.System;
 using SFML.Window;
-using System;
 
-namespace AssAlgo
+namespace AssAlgo.UI
 {
-    enum MouseButtonState
+    internal enum MouseButtonState
     {
         Released,
         Pressed
+    }
+
+    internal enum KeyboardButtonState
+    {
+        None,
+        Shift
     }
 
     abstract class UIEntity : Transformable, IEntity
     {
         public IEntity Parent { get; set; }
 
-        abstract public bool Visible { get; set; }
-        abstract public bool Initialized { get; set; }
+        public abstract bool Visible { get; set; }
+        public abstract bool Initialized { get; set; }
 
         private int _z;
         private Vector2f _size;
-        private Vector2f _localPosition;
-        private TomasEngine _parentWorld;
+        private readonly TomasEngine _parentWorld;
 
         public bool Dragging { get; protected set; }
         public bool Hover { get; set; }
@@ -36,11 +40,7 @@ namespace AssAlgo
             }
         }
 
-        public new Vector2f Position
-        {
-            get => _localPosition;
-            set => _localPosition = value;
-        }
+        public new Vector2f Position { get; set; }
 
         public Vector2f GlobalPosition
         {
@@ -48,7 +48,8 @@ namespace AssAlgo
             set => base.Position = value;
         }
 
-        public MouseButtonState mouseState;
+        public MouseButtonState MouseState;
+        public KeyboardButtonState KeyboardState;
 
         public int Z 
         {
@@ -62,7 +63,7 @@ namespace AssAlgo
             }
         }
 
-        public UIEntity(TomasEngine o, IEntity parent)
+        protected UIEntity(TomasEngine o, IEntity parent)
         {
             _parentWorld = o;
             this.Parent = parent;
@@ -90,14 +91,14 @@ namespace AssAlgo
         public virtual void OnEntityMouseUp(TomasEngine engine, MouseButtonEventArgs a) { }
         public virtual void OnEntityMouseMoved(TomasEngine engine, MouseMoveEventArgs a) { }
 
-        abstract public void Resized();
+        public abstract void Resized();
 
-        abstract public void Draw(RenderTarget target, RenderStates states);
+        public abstract void Draw(RenderTarget target, RenderStates states);
 
-        abstract public void Init(TomasEngine o);
+        public abstract void Init(TomasEngine o);
 
-        abstract public void UIUpdate(TomasEngine engine, TomasTime time);
+        public abstract void UIUpdate(TomasEngine engine, TomasTime time);
 
-        abstract public void LogicUpdateAsync(TomasEngine engine, TomasTime time);
+        public abstract void LogicUpdateAsync(TomasEngine engine, TomasTime time);
     }
 }
